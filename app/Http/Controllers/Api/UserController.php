@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     //
-        /**
+    /**
      * Display a listing of users.
      * Accessible to Admin only.
      */
@@ -23,7 +23,7 @@ class UserController extends Controller
             'data' => $users,
         ], 200);
     }
-        /**
+    /**
      * Store a newly created user.
      * Accessible to Admin only.
      */
@@ -52,7 +52,7 @@ class UserController extends Controller
             'data' => $user,
         ], 201);
     }
-        /**
+    /**
      * Change the role of a user.
      */
     public function changeUserRole(Request $request, $id)
@@ -82,7 +82,7 @@ class UserController extends Controller
             'data' => $user,
         ], 200);
     }
-       /**
+    /**
      * Update the specified user.
      * Accessible to Admin only.
      */
@@ -98,19 +98,40 @@ class UserController extends Controller
             'role' => 'nullable|in:admin,instructor,learner',
         ]);
 
-        $user->update([
-            'firstname' => $request->firstname ?? $user->firstname,
-            'lastname' => $request->lastname ?? $user->lastname,
-            'email' => $request->email ?? $user->email,
-            'password' => $request->password ? Hash::make($request->password) : $user->password,
-            'role' => $request->role ?? $user->role,
-        ]);
+        try {
+            $user->update([
+                'firstname' => $request->firstname ?? $user->firstname,
+                'lastname' => $request->lastname ?? $user->lastname,
+                'email' => $request->email ?? $user->email,
+                'password' => $request->password ? Hash::make($request->password) : $user->password,
+                'role' => $request->role ?? $user->role,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully.',
+                'data' => $user,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating the user.',
+            ], 500);
+        }
+    }
+    /**
+     * Remove the specified user.
+     * Accessible to Admin only.
+     */
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+
+        $user->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'User updated successfully.',
-            'data' => $user,
+            'message' => 'User deleted successfully.',
         ], 200);
     }
-
 }
