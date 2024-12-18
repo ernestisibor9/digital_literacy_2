@@ -4,7 +4,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\MaterialController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +25,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix('v1')->group(function () {
+
     // Public routes
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -45,5 +48,18 @@ Route::prefix('v1')->group(function () {
         Route::put('/instructor/lessons/{id}', [LessonController::class, 'update']);
         Route::delete('/instructor/lessons/{id}', [LessonController::class, 'delete']);
         Route::post('/instructor/materials', [MaterialController::class, 'store']);
+    });
+
+    // Protected routes (only for admin)
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+        Route::get('/admin/users', [UserController::class, 'index']);
+        Route::post('/admin/users', [UserController::class, 'store']);
+        Route::put('/admin/users/{id}', [UserController::class, 'update']);
+        Route::delete('/admin/users/{id}', [UserController::class, 'destroy']);
+        Route::put('/admin/users/{id}/role', [UserController::class, 'changeUserRole']);
+    });
+
+    Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
+        return Auth::user();
     });
 });
